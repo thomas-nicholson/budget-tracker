@@ -42,9 +42,15 @@ function pushOnline() {
 request.onsuccess = ({target}) => {
     console.log("Success");
     db = target.result
+    if (navigator.onLine) {
+        console.log('online');
+        pushOnline();
+    }
 }
 
 request.onerror = event => {
     console.error("Database error: " + event.target.errorCode);
 }
+
+window.addEventListener('online', pushOnline);
 
