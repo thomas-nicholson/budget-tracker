@@ -1,7 +1,6 @@
 let db;
 
-// We request a database instance.
-const request = indexedDB.open("firstDatabase", 1);
+const request = indexedDB.open("budgetDatabase", 1);
 
 request.onupgradeneeded = ({ target }) => {
     db = target.result;
@@ -17,10 +16,10 @@ function pushOnline() {
     const budgetGetAll = budgetStore.getAll();
 
     budgetGetAll.onsuccess = () => {
-        if (getAll.result.length > 0) {
+        if (budgetGetAll.result.length > 0) {
             fetch('/api/transaction/bulk', {
               method: 'POST',
-              body: JSON.stringify(getAll.result),
+              body: JSON.stringify(budgetGetAll.result),
               headers: {
                 Accept: 'application/json, text/plain, */*',
                 'Content-Type': 'application/json',
@@ -40,7 +39,6 @@ function pushOnline() {
 }
 
 request.onsuccess = ({target}) => {
-    console.log("Success");
     db = target.result
     if (navigator.onLine) {
         console.log('online');
@@ -51,6 +49,12 @@ request.onsuccess = ({target}) => {
 request.onerror = event => {
     console.error("Database error: " + event.target.errorCode);
 }
+
+function saveRecord(record) {
+    const transaction = db.transaction(['BudgetStore'], 'readwrite');
+    const budgetStore = transaction.objectStore('BudgetStore');
+    budgetStore.add(record);
+};
 
 window.addEventListener('online', pushOnline);
 
