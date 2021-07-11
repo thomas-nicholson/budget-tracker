@@ -10,6 +10,35 @@ request.onupgradeneeded = ({ target }) => {
     }
 };
 
+function pushOnline() {
+    let transaction = db.transaction(['BudgetStore'], 'readwrite');
+    const budgetStore = transaction.objectStore('BudgetStore');
+
+    const budgetGetAll = budgetStore.getAll();
+
+    budgetGetAll.onsuccess = () => {
+        if (getAll.result.length > 0) {
+            fetch('/api/transaction/bulk', {
+              method: 'POST',
+              body: JSON.stringify(getAll.result),
+              headers: {
+                Accept: 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+              },
+            })
+            .then(res => res.json())
+            .then((res) => {
+                if (res.length !== 0) {
+                    transaction = db.transaction(['BudgetStore'], 'readwrite');        
+                    const budgetStore = transaction.objectStore('BudgetStore');
+                    budgetStore.clear();
+                    console.log("Offline storage cleared");
+                  }
+            })
+        }
+    }
+}
+
 request.onsuccess = ({target}) => {
     console.log("Success");
     db = target.result
