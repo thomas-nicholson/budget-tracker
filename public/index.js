@@ -8,10 +8,20 @@ fetch("/api/transaction")
   .then(data => {
     // save db data on global variable
     transactions = data;
+    let transaction = db.transaction(['BudgetStore'], 'readwrite');
+    const budgetStore = transaction.objectStore('BudgetStore');
+    const budgetGetAll = budgetStore.getAll();
 
-    populateTotal();
-    populateTable();
-    populateChart();
+    budgetGetAll.onsuccess = () => {
+      if (budgetGetAll.result.length > 0) {
+        transactions = budgetGetAll.result.concat(transactions);
+      }
+      populateTotal();
+      populateTable();
+      populateChart();
+    }
+
+    
   });
 
 function populateTotal() {
